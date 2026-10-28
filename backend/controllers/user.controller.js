@@ -52,29 +52,27 @@ class User{
     async resetPassword(req,res,next){
         try{
             const {oldPassword, newPassword} = req.body;
-            const email = req.user.email;
+            const id = req.user.id;
 
             if(!oldPassword || !newPassword){
                 throw new Error("Enter the Password");
             };
             // Find the User if user exits then we change the password
             // IF User is not Exits then throw an Error
-            const user = await userModel.findOne({email:email}).select("+password").lean();
+            const user = await userModel.findOne({_id:id}).select("+password").lean();
             if(!user){
                 throw new Error("Invalid token");
             };
             // check the OldPassword are matched or NOT
-            console.log(user.password)
-            console.log(oldPassword)
             const oldPass = await Authentication.convertTheHashedPassword(oldPassword,user.password);
             console.log(oldPass)
             if(!oldPass){
                 throw new Error("Password not matched");
             };
             // Changing the password
-            const IsChange = await userModel.findByIdAndUpdate({telephone:userTelephone},{
-                $set:{password: newPassword}
-            });
+            const IsChange = await userModel.findById({_id:id});
+            IsChange.password = newPassword;
+            await IsChange.save();
             // return the Details
             return res.status(201).json({
                 success: true,
