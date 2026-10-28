@@ -1,7 +1,16 @@
-const express = require('express');
+import express from 'express';
 const app = express();
+import { config } from 'dotenv'
+import rateLimit from 'express-rate-limit';
+import { Error } from './middlewares/Error.middleware.js';
+import { connectDatabase } from './utils/db.js';
+import dns from 'dns';
+import { userRouter } from './routes/user.route.js';
 
-const { rateLimit } = require('express-rate-limit');
+
+dns.setServers(["0.0.0.0", "1.1.1.1"]);
+config();
+
 const limiter = rateLimit({
 	windowMs: 15 * 60 * 1000, // 15 minutes
 	limit: 20, 
@@ -16,12 +25,19 @@ app.use(limiter);
 app.use(express.json());
 
 // app routes and request at the "/" URL"
-app.get("/", (req,res)=> {
+app.get("/api/v1", (req,res)=> {
     res.status(200).json({
         message: "Abhishek RAj"
     })
 })
-// run the app 
+app.use("/api/v1", userRouter);
+
+// connect the database
+connectDatabase();
+
+
+// error middleware 
+app.use(Error);
 
 app.listen(4000,()=> {
     console.log("server is running on http://localhost:4000")}
