@@ -65,7 +65,6 @@ class User{
             };
             // check the OldPassword are matched or NOT
             const oldPass = await Authentication.convertTheHashedPassword(oldPassword,user.password);
-            console.log(oldPass)
             if(!oldPass){
                 throw new Error("Password not matched");
             };
